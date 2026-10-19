@@ -34,7 +34,7 @@ export function DashboardShell({ user, nav, brand, bell, children }: {
 
   async function signOut() {
     await authClient.signOut();
-    router.push("/login");
+    router.push("/");
     router.refresh();
   }
 
@@ -44,7 +44,7 @@ export function DashboardShell({ user, nav, brand, bell, children }: {
       <aside className={cn("no-print fixed inset-y-0 left-0 z-40 flex w-72 transform flex-col border-r border-slate-200/70 bg-white/85 backdrop-blur-xl transition duration-300 ease-out lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0", open ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex items-center gap-3 px-6 py-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark.png" alt="" className="h-11 w-11 shrink-0 rounded-xl shadow-md ring-1 ring-slate-900/5" />
+         <Link href={'/'}> <img src="/logo-mark.png" alt="" className="h-11 w-11 shrink-0 rounded-xl shadow-md ring-1 ring-slate-900/5" /></Link>
           <div className="min-w-0">
             <p className="truncate text-[15px] font-extrabold leading-tight tracking-tight text-slate-900">{brand}</p>
             <p className="mt-0.5 text-xs font-medium text-indigo-600/80">{PORTAL[user.role] ?? "Portal"}</p>

@@ -10,7 +10,7 @@ export default function RegisterParentPage() {
       <div className="card relative w-full border-white/60 bg-white/80 shadow-[var(--shadow-lift)] backdrop-blur-xl max-w-lg sm:p-8">
         <div className="mb-5 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark.png" alt="" className="mx-auto h-14 w-14 rounded-xl shadow-lg ring-4 ring-white" />
+          <Link href={'/'}><img src="/logo-mark.png" alt="" className="mx-auto h-14 w-14 rounded-xl shadow-lg ring-4 ring-white" /></Link>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-transparent bg-gradient-to-r from-indigo-700 to-violet-600 bg-clip-text">Create Parent Account</h1>
           <p className="mt-1 text-sm text-slate-500">Register to monitor your child&apos;s progress</p>
         </div>
