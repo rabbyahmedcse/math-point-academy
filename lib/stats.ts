@@ -26,6 +26,11 @@ export interface LedgerRow {
  * fee (student override, else batch fee), so "due" is correct even before the first payment.
  */
 export async function getFeeLedger(month: string, batchIds?: Types.ObjectId[]): Promise<LedgerRow[]> {
+  return (await getFeeLedgerWithFees(month, batchIds)).rows;
+}
+
+/** Same as getFeeLedger, but also returns the month's Fee documents it already loaded (payments included), so callers need no second query. */
+export async function getFeeLedgerWithFees(month: string, batchIds?: Types.ObjectId[]) {
   await connectDB();
   const batchFilter = batchIds ? { _id: { $in: batchIds } } : {};
   const batches = await Batch.find({ status: "active", ...batchFilter }).lean();
@@ -37,7 +42,7 @@ export async function getFeeLedger(month: string, batchIds?: Types.ObjectId[]): 
   const fees = await Fee.find({ month, studentId: { $in: students.map((s) => s._id) } }).lean();
   const feeMap = new Map(fees.map((f) => [String(f.studentId), f]));
 
-  return students.map((s) => {
+  const rows: LedgerRow[] = students.map((s) => {
     const b = batchMap.get(String(s.batchId))!;
     const f = feeMap.get(String(s._id));
     const amountDue = f ? f.amountDue : (s.monthlyFee ?? b.monthlyFee ?? 0);
@@ -48,6 +53,7 @@ export async function getFeeLedger(month: string, batchIds?: Types.ObjectId[]): 
       due: Math.max(amountDue - paid, 0), status: feeStatus(paid, amountDue), feeId: f ? String(f._id) : undefined,
     };
   });
+  return { rows, fees };
 }
 
 export async function todaysClasses(batchIds?: Types.ObjectId[]) {
@@ -100,18 +106,30 @@ export async function studentAttendance(studentId: string, batchId?: string | nu
  * = unpaid balance of every saved Fee record of active students
  *   + this month's expected fee for students that have no Fee record yet.
  * Past months in which nothing was ever recorded are unknown to the system and are not counted.
+ *
+ * The saved-balance aggregate and the current-month ledger are independent, so they run in parallel.
+ * Pass `currentLedger` (a ledger / promise already computed for the CURRENT month and the SAME batches)
+ * to avoid computing it a second time.
  */
-export async function getTotalDueAllMonths(batchIds?: Types.ObjectId[]): Promise<number> {
+export async function getTotalDueAllMonths(
+  batchIds?: Types.ObjectId[],
+  currentLedger?: LedgerRow[] | Promise<LedgerRow[]>,
+): Promise<number> {
   await connectDB();
-  const students = await User.find(
-    { role: "student", status: "active", batchId: batchIds ? { $in: batchIds } : { $ne: null } },
-    { _id: 1 },
-  ).lean();
-  const [agg] = await Fee.aggregate([
-    { $match: { studentId: { $in: students.map((s) => s._id) } } },
-    { $group: { _id: null, due: { $sum: { $max: [{ $subtract: ["$amountDue", "$paidTotal"] }, 0] } } } },
+  const [saved, current] = await Promise.all([
+    (async () => {
+      const students = await User.find(
+        { role: "student", status: "active", batchId: batchIds ? { $in: batchIds } : { $ne: null } },
+        { _id: 1 },
+      ).lean();
+      const [agg] = await Fee.aggregate([
+        { $match: { studentId: { $in: students.map((s) => s._id) } } },
+        { $group: { _id: null, due: { $sum: { $max: [{ $subtract: ["$amountDue", "$paidTotal"] }, 0] } } } },
+      ]);
+      return (agg?.due ?? 0) as number;
+    })(),
+    currentLedger ?? getFeeLedger(monthStr(), batchIds),
   ]);
-  const current = await getFeeLedger(monthStr(), batchIds);
   const unrecorded = current.filter((r) => !r.feeId).reduce((s, r) => s + r.due, 0);
-  return (agg?.due ?? 0) + unrecorded;
+  return saved + unrecorded;
 }

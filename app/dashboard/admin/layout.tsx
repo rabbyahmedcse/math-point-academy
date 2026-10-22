@@ -5,6 +5,7 @@ import { adminNav } from "@/lib/nav";
 import { connectDB } from "@/lib/db";
 import { Settings } from "@/models/Misc";
 import { SITE } from "@/lib/site";
+import Footer from "@/app/footer";
 
 /** Server-side guard: every page below this layout requires an active admin. */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -12,13 +13,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   await connectDB();
   const s = await Settings.findById("main").lean();
   return (
-    <DashboardShell
-      user={{ name: user.name, role: user.role, studentId: user.studentId, image: user.image, mustChangePassword: user.mustChangePassword }}
+<div>
+<DashboardShell
+      user={{ name: user.name, email: user.email, role: user.role, studentId: user.studentId, image: user.image, mustChangePassword: user.mustChangePassword }}
       nav={adminNav}
       brand={s?.coachingName ?? SITE.name}
       bell={{ href: "/dashboard/admin/notices", dot: false }}
     >
       {children}
     </DashboardShell>
+    <Footer></Footer>
+</div>
   );
 }

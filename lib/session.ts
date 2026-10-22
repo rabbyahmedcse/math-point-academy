@@ -26,7 +26,7 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
     role: u.role,
     status: u.status,
     phone: u.phone ?? undefined,
-    image: u.role === "student" && u.image && /^https?:\/\//i.test(u.image) ? u.image : undefined,
+    image: u.image && /^https?:\/\//i.test(u.image) ? u.image : undefined, // photo link (http/https only) — every role may set one
     studentId: u.studentId ?? undefined,
     className: u.className ?? undefined,
     batchId: u.batchId ? String(u.batchId) : null,

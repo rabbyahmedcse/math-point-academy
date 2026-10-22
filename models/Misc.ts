@@ -29,14 +29,19 @@ const settingsSchema = new Schema({
 export const Settings: Model<InferSchemaType<typeof settingsSchema>> =
   (models.Settings as Model<InferSchemaType<typeof settingsSchema>>) || model("Settings", settingsSchema);
 
-/** Homework / study materials per batch. */
+/**
+ * Homework / quizzes / study materials per batch.
+ * Backward-compatible additions: kind may also be "quiz"; optional `publishAt` = publish/scheduled date
+ * (absent on every existing record => published, dated by createdAt). Students never see a future publishAt.
+ */
 const materialSchema = new Schema(
   {
     batchId: { type: Schema.Types.ObjectId, ref: "Batch", required: true, index: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
-    kind: { type: String, enum: ["homework", "material"], default: "material" },
+    kind: { type: String, enum: ["homework", "quiz", "material"], default: "material" },
     url: { type: String, default: "" },
+    publishAt: { type: Date },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     createdByName: String,
   },

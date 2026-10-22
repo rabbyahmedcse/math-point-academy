@@ -1,6 +1,6 @@
 # Coaching Management System v1.1
 
-Next.js 15 (App Router) · Tailwind CSS 4 · MongoDB (Mongoose) · Better Auth · optional FastAPI reports service.
+Next.js 15 (App Router) · Tailwind CSS 4 · MongoDB (Mongoose) · Better Auth. Single Next.js + Node.js application (no separate backend).
 Implements the Admin / Teacher / Student flows from *Coaching_Management_System_Requirements_BN_v1_1.docx*.
 
 ## Implementation plan (in the order it was built)
@@ -9,7 +9,7 @@ Implements the Admin / Teacher / Student flows from *Coaching_Management_System_
 3. **Authorization** – `lib/session.ts` (`requireRole` for pages, `requireActionUser` for actions) re-reads the user from MongoDB on **every** request; `lib/access.ts` adds per-teacher permissions and batch scoping. `middleware.ts` is only an optimistic cookie check.
 4. **Business logic** – server actions in `actions/` (zod-validated, wrapped by `runAction` for uniform errors).
 5. **UI** – role layouts (`app/dashboard/{admin,teacher,student}/layout.tsx`) + shared feature pages in `components/features/` that admin and teacher routes re-export.
-6. **Ops** – `scripts/seed-admin.ts` (first admin), `python-api/` (optional reports).
+6. **Ops** – `scripts/seed-admin.ts` (first admin), `app/api/reports/*` (staff reports).
 
 ## Setup
 ```bash
@@ -55,11 +55,22 @@ Public content (name, description, About Us, specialities, director, address, ph
 ## Dashboard layout
 `components/layout/DashboardShell.tsx` is the shared layout for all roles: white sidebar with icons (active item in solid blue, red Logout at the bottom), top bar with a notice bell (red dot when a notice was published in the last 3 days — students only) and a user menu. The student home (`app/dashboard/student/page.tsx`) has the welcome banner, profile card, attendance ring, due / latest result / next class tiles, upcoming classes, notices and a due-fee alert; its building blocks are in `components/features/dashboard/parts.tsx`.
 
-## Python backend (optional)
-`python-api/main.py` reads the same MongoDB. Next.js forwards the Better Auth cookie (`lib/python-api.ts`); FastAPI validates it by calling `/api/auth/get-session` and re-checks role/status from MongoDB. Auth stays in TypeScript; Python hosts heavy reports. Everything in the UI already works **without** it.
-```bash
-cd python-api && pip install -r requirements.txt && uvicorn main:app --port 8000
-```
+## Reports API (Node.js Route Handlers)
+Staff-only JSON reports live in `app/api/reports/*` and `lib/reports.ts` (they replaced the former optional FastAPI service; see `MIGRATION.md`). Role and status are re-read from MongoDB on every call; teachers are limited to their own batches.
+
+| Endpoint | Query | Response |
+|---|---|---|
+| `GET /api/reports/attendance` | `batch_id`, `month=YYYY-MM` | `[{studentId, name, attended, sessions, percent}]` |
+| `GET /api/reports/fees` | `month=YYYY-MM` (optional, default current month) | `{month, records, expected, collected, due}` |
+
+Errors use `{ "detail": "..." }` with 401 / 403 / 404 / 422. Tests: `npm test`.
+
+## Deploying to Vercel
+1. Push the project (the folder containing `package.json`) to Git and import it in Vercel; if it is a sub-folder of a repo, set **Root Directory** to it. Framework preset: Next.js (defaults are fine).
+2. Add the variables from `.env.example` (`MONGODB_URI`, `MONGODB_DB`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, optional `NEXT_PUBLIC_APP_URL`, `APP_TIMEZONE`). Set `BETTER_AUTH_URL` to the exact production origin (`https://…`).
+3. In MongoDB Atlas -> Network Access allow Vercel's egress (commonly `0.0.0.0/0` with a strong DB user, since Vercel IPs are dynamic).
+4. Better Auth only trusts its own `BETTER_AUTH_URL` origin: sign-in from a Vercel *preview* URL or a custom domain that differs from it will be rejected until you add it (Better Auth `trustedOrigins`) or use one canonical domain.
+5. Admin seeding: only for a brand-new empty database. `npm run seed:admin` is idempotent (does nothing if an admin exists) but run it locally with `.env.local`; do not put `ADMIN_PASSWORD` in Vercel.
 
 ## Production checklist
 - Set a strong `BETTER_AUTH_SECRET`; serve over HTTPS; remove `ADMIN_PASSWORD` after seeding.
@@ -153,7 +164,6 @@ lib/auth-client.ts
 lib/auth.ts
 lib/db.ts
 lib/nav.ts
-lib/python-api.ts
 lib/session.ts
 lib/stats.ts
 lib/student-data.ts
@@ -175,9 +185,33 @@ next-env.d.ts
 next.config.ts
 package.json
 postcss.config.mjs
-python-api/.env.example
-python-api/main.py
-python-api/requirements.txt
+app/api/reports/attendance/route.ts
+app/api/reports/fees/route.ts
+lib/report-calc.ts
+lib/reports.ts
+tests/report-calc.test.ts
 scripts/seed-admin.ts
 tsconfig.json
 ```
+
+
+## UI loading, not-found, and notification read status
+
+- Added a global `app/loading.tsx` loading state and a Bengali-friendly `app/not-found.tsx` page.
+- Added `NoticeRead` records keyed by user and notice so read status is personal to each account.
+- Added `/api/notifications` to return role-scoped visible notices and to mark one notice or all visible notices as read.
+- Added a notification dropdown with unread red indicator, per-notice read action, and “Mark all read”.
+- Notifications are loaded from the existing `Notice` collection; no notice content is duplicated.
+- The project type-check passed after these changes. A production build could not be verified in this environment because the packaged `next` executable returned `Permission denied`; run `npm ci` and `npm run build` locally before deploying.
+
+
+## Profile photos & Google Drive links
+Photos are stored exactly as the user pasted them (no schema change) and converted **when rendered** by `lib/image-url.ts`, so existing records are fixed too.
+Supported Drive links: `/file/d/ID/view…`, `/open?id=ID`, `/uc?export=view&id=ID`, `/thumbnail?id=ID`. They are shown through Google's thumbnail endpoint
+(`https://drive.google.com/thumbnail?id=ID&sz=w256`), with `uc?export=view` as a single second attempt, then the initials fallback. Other image URLs are used unchanged.
+
+**Sharing setup (required by Google, cannot be bypassed):** open the image in Drive -> Share -> General access -> **Anyone with the link** -> role **Viewer** -> Copy link.
+Private, deleted or quota-limited files, folders and Google Docs links cannot be displayed; the app shows initials and explains why in the profile editor.
+
+Images use a plain `<img>` (not `next/image`): the URLs are arbitrary user-supplied hosts, so `remotePatterns` could not cover them, and the Next optimizer would add a
+server-side fetch of user-chosen URLs and consume Vercel image quota. No proxy is used, so no `next.config.ts` change is needed.

@@ -4,6 +4,10 @@ import { connectDB } from "@/lib/db";
 import { Settings } from "@/models/Misc";
 import { SITE } from "@/lib/site";
 import { MailIcon, PhoneIcon, PinIcon, UserIcon, BookIcon } from "@/components/ui/icons";
+import Footer from "./footer";
+import HeroPage from "./hero";
+import Navbar from "./Navbar";
+
 
 /** Public landing page. Must still render if the database is slow or down, so DB reads are time-boxed. */
 async function safe<T>(fn: () => Promise<T>, fallback: T, ms = 2500): Promise<T> {
@@ -45,156 +49,264 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* ---------- Header ---------- */}
-      <header className="sticky top-0 z-20 border-b border-amber-100 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5">
-          <Link href="/" className="flex min-w-0 items-center gap-2.5 font-bold text-slate-900">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-mark.png" alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-lg" />
-            <span className="truncate">{name}</span>
-          </Link>
-          <nav className="flex items-center gap-1 text-sm">
-            <a href="#about" className="hidden px-2.5 py-2 text-slate-600 hover:text-amber-700 md:inline">আমাদের সম্পর্কে</a>
-            <a href="#specialities" className="hidden px-2.5 py-2 text-slate-600 hover:text-amber-700 md:inline">বৈশিষ্ট্য</a>
-            <a href="#portal" className="hidden px-2.5 py-2 text-slate-600 hover:text-amber-700 md:inline">Student Portal</a>
-            <a href="#contact" className="hidden px-2.5 py-2 text-slate-600 hover:text-amber-700 md:inline">যোগাযোগ</a>
-            {dash ? (
-              <Link href={dash} className="btn btn-primary">Go to dashboard</Link>
-            ) : (
-              <>
-                <Link href="/login" className="btn btn-secondary">Sign in</Link>
-                <Link href="/register" className="btn btn-primary">Register</Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      
+
+<Navbar name={name} dash={dash} />
+
 
       {/* ---------- Hero ---------- */}
-      <section className="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-900 text-white">
-        <div className="mx-auto max-w-5xl px-4 py-10 text-center sm:py-14">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.jpg" alt={`${SITE.name} — ${SITE.tagline}`} width={1408} height={768} className="mx-auto w-full max-w-2xl rounded-2xl shadow-2xl ring-1 ring-amber-400/40" />
-          <p className="mx-auto mt-8 max-w-3xl text-base leading-8 text-slate-200 sm:text-lg sm:leading-9">{SITE.description}</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            {dash ? (
-              <Link href={dash} className="rounded-xl bg-amber-400 px-7 py-3 text-sm font-bold text-slate-900 hover:bg-amber-300">Open my dashboard</Link>
-            ) : (
-              <>
-                <Link href="/register" className="rounded-xl bg-amber-400 px-7 py-3 text-sm font-bold text-slate-900 hover:bg-amber-300">ভর্তি / Student Register</Link>
-                <Link href="/register/parent" className="rounded-xl border border-white/30 px-7 py-3 text-sm font-semibold text-white hover:bg-white/10">Parent account</Link>
-                <Link href="/login" className="rounded-xl border border-white/30 px-7 py-3 text-sm font-semibold text-white hover:bg-white/10">Sign in</Link>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
+   <HeroPage />
 
       {/* ---------- About us ---------- */}
-      <section id="about" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-14">
-        <SectionTitle bn="আমাদের সম্পর্কে" en="About Us" />
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
-          {SITE.about.map((a) => (
-            <article key={a.title} className="rounded-2xl border border-amber-200 bg-amber-50/50 p-6 shadow-sm">
-              <span className="text-3xl" aria-hidden>{a.icon}</span>
-              <h3 className="mt-3 text-lg font-bold text-slate-900">{a.title}</h3>
-              <p className="mt-2 leading-8 text-slate-700">{a.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+     
+<section
+  id="about"
+  className="relative scroll-mt-24 overflow-hidden bg-gradient-to-b from-white via-amber-50/40 to-white px-4 py-16 sm:py-20 lg:py-24"
+>
+  {/* Background decoration */}
+  <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-amber-300/10 blur-3xl" />
+  <div className="pointer-events-none absolute -right-32 bottom-10 h-72 w-72 rounded-full bg-indigo-300/10 blur-3xl" />
+
+  <div className="relative mx-auto max-w-6xl">
+    {/* Section heading */}
+    <div className="text-center">
+      <SectionTitle bn="আমাদের সম্পর্কে" en="About Us" />
+
+      <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+        Math Point Academy-তে আমরা সহজবোধ্য পাঠদান, নিয়মিত অনুশীলন
+        এবং শিক্ষার্থীদের আত্মবিশ্বাস গড়ে তোলার ওপর গুরুত্ব দিই।
+      </p>
+
+      <div className="mx-auto mt-5 h-1 w-20 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-500" />
+    </div>
+
+    {/* About cards */}
+    <div className="mt-10 grid gap-5 sm:mt-12 md:grid-cols-2">
+      {SITE.about.map((a, index) => (
+        <article
+          key={a.title}
+          className="group relative overflow-hidden rounded-2xl border border-amber-100 bg-white/90 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-900/5 sm:p-8"
+        >
+          {/* Top accent */}
+          <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-500 transition-transform duration-300 group-hover:scale-x-100" />
+
+          {/* Decorative glow */}
+          <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-200/20 blur-2xl transition-colors duration-300 group-hover:bg-amber-300/30" />
+
+          <div className="relative">
+            {/* Icon */}
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-orange-100 text-3xl shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span aria-hidden="true">{a.icon}</span>
+            </div>
+
+            {/* Card content */}
+            <h3 className="mt-5 text-lg font-bold leading-7 text-slate-900 transition-colors duration-300 group-hover:text-amber-700 sm:text-xl">
+              {a.title}
+            </h3>
+
+            <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+              {a.text}
+            </p>
+
+            {/* Bottom accent */}
+            <div className="mt-5 h-0.5 w-10 rounded-full bg-amber-300 transition-all duration-300 group-hover:w-20 group-hover:bg-indigo-400" />
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* ---------- Specialities ---------- */}
-      <section id="specialities" className="scroll-mt-16 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-14">
-          <SectionTitle bn="প্রধান বৈশিষ্ট্যসমূহ" en="Our Specialities" />
-          <p className="mt-3 text-center text-lg font-semibold text-slate-700">{SITE.specialitiesTitle}</p>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {SITE.specialities.map((s) => (
-              <article key={s.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-2xl" aria-hidden>{s.icon}</span>
-                <h3 className="mt-3 font-bold text-slate-900">{s.title}</h3>
-                <p className="mt-1 leading-7 text-slate-600">{s.text}</p>
-              </article>
-            ))}
+     
+<section
+  id="specialities"
+  className="relative scroll-mt-24 overflow-hidden bg-gradient-to-b from-white via-indigo-50/40 to-slate-50 px-4 py-16 sm:py-20 lg:py-24"
+>
+  {/* Background glow */}
+  <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-indigo-400/10 blur-3xl" />
+  <div className="pointer-events-none absolute -right-32 bottom-0 h-72 w-72 rounded-full bg-amber-300/10 blur-3xl" />
+
+  <div className="relative mx-auto max-w-6xl">
+    {/* Section heading */}
+    <div className="text-center">
+      <SectionTitle
+        bn="প্রধান বৈশিষ্ট্যসমূহ"
+        en="Our Specialities"
+      />
+
+      <p className="mx-auto mt-4 max-w-2xl text-base font-semibold leading-8 text-slate-700 sm:text-lg">
+        {SITE.specialitiesTitle}
+      </p>
+
+      <div className="mx-auto mt-5 h-1 w-20 rounded-full bg-gradient-to-r from-amber-400 via-indigo-400 to-cyan-400" />
+    </div>
+
+    {/* Specialities cards */}
+    <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3">
+      {SITE.specialities.map((s, index) => (
+        <article
+          key={s.title}
+          className="group relative overflow-hidden rounded-2xl border border-indigo-100 bg-white/90 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-amber-300/80 hover:shadow-xl hover:shadow-indigo-950/10 sm:p-7"
+        >
+          {/* Top gradient border */}
+          <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-amber-300 via-indigo-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
+
+          {/* Background decoration */}
+          <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-400/10 blur-3xl transition-colors duration-300 group-hover:bg-amber-300/20" />
+
+          <div className="relative">
+            {/* Icon and number */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-indigo-100 bg-gradient-to-br from-slate-900 to-indigo-950 text-2xl text-white shadow-md shadow-indigo-950/15 transition-all duration-300 group-hover:scale-110 group-hover:border-amber-300/40 group-hover:shadow-lg group-hover:shadow-indigo-950/20">
+                <span aria-hidden="true">{s.icon}</span>
+              </div>
+
+              <span className="text-sm font-bold tracking-widest text-indigo-200 transition-colors duration-300 group-hover:text-amber-400">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+            </div>
+
+            {/* Title */}
+            <h3 className="mt-5 text-lg font-bold leading-7 text-slate-900 transition-colors duration-300 group-hover:text-indigo-700 sm:text-xl">
+              {s.title}
+            </h3>
+
+            {/* Description */}
+            <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+              {s.text}
+            </p>
+
+            {/* Bottom accent */}
+            <div className="mt-5 h-0.5 w-10 rounded-full bg-gradient-to-r from-amber-400 to-indigo-400 transition-all duration-300 group-hover:w-20" />
           </div>
-        </div>
-      </section>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* ---------- Student portal ---------- */}
-      <section id="portal" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-14">
-        <SectionTitle bn="অনলাইন স্টুডেন্ট পোর্টাল" en="How to join" />
-        <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((s, i) => (
-            <li key={s.t} className="card">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-400 text-sm font-bold text-slate-900">{i + 1}</span>
-              <h3 className="mt-3 font-semibold">{s.t}</h3>
-              <p className="mt-1 text-sm text-slate-600">{s.d}</p>
-            </li>
-          ))}
-        </ol>
-        <h3 className="mb-3 mt-10 text-lg font-semibold text-slate-900">Important information</h3>
-        <ul className="grid gap-3 md:grid-cols-2">
-          {NOTES.map((n) => (
-            <li key={n} className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><span>ℹ️</span><span>{n}</span></li>
-          ))}
-        </ul>
-      </section>
+     
+{/* ---------- Student Portal ---------- */}
+<section
+  id="portal"
+  className="relative scroll-mt-24 overflow-hidden bg-gradient-to-b from-white via-indigo-50/40 to-slate-50 px-4 py-16 sm:py-20 lg:py-24"
+>
+  {/* Background decoration */}
+  <div className="pointer-events-none absolute -left-32 top-16 h-72 w-72 rounded-full bg-indigo-400/10 blur-3xl" />
+  <div className="pointer-events-none absolute -right-32 bottom-10 h-72 w-72 rounded-full bg-amber-300/10 blur-3xl" />
+
+  <div className="relative mx-auto max-w-6xl">
+    {/* Section heading */}
+    <div className="text-center">
+      <SectionTitle
+        bn="অনলাইন স্টুডেন্ট পোর্টাল"
+        en="How to Join"
+      />
+
+      <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+        সহজ কয়েকটি ধাপ অনুসরণ করে Math Point Academy-এর অনলাইন
+        স্টুডেন্ট পোর্টালে যুক্ত হও এবং তোমার পড়াশোনার কার্যক্রম পরিচালনা করো।
+      </p>
+
+      <div className="mx-auto mt-5 h-1 w-20 rounded-full bg-gradient-to-r from-amber-400 via-indigo-400 to-cyan-400" />
+    </div>
+
+    {/* Joining steps */}
+    <ol className="mt-10 grid grid-cols-1 gap-5 sm:mt-12 sm:grid-cols-2 lg:grid-cols-4">
+      {STEPS.map((s, i) => (
+        <li
+          key={s.t}
+          className="group relative overflow-hidden rounded-2xl border border-indigo-100 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-300/80 hover:shadow-xl hover:shadow-indigo-950/10 sm:p-6"
+        >
+          {/* Top accent */}
+          <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-amber-300 via-indigo-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
+
+          {/* Step number */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-500 text-base font-extrabold text-slate-950 shadow-md shadow-amber-500/15 transition-transform duration-300 group-hover:scale-110">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+
+            <span className="text-xs font-bold uppercase tracking-widest text-indigo-200 transition-colors duration-300 group-hover:text-amber-400">
+              Step {i + 1}
+            </span>
+          </div>
+
+          {/* Step content */}
+          <h3 className="mt-5 break-words text-base font-bold leading-7 text-slate-900 transition-colors duration-300 group-hover:text-indigo-700 sm:text-lg">
+            {s.t}
+          </h3>
+
+          <p className="mt-2 break-words text-sm leading-7 text-slate-600">
+            {s.d}
+          </p>
+
+          {/* Bottom accent */}
+          <div className="mt-5 h-0.5 w-9 rounded-full bg-gradient-to-r from-amber-400 to-indigo-400 transition-all duration-300 group-hover:w-16" />
+        </li>
+      ))}
+    </ol>
+
+  
+{/* Important Information */}
+<div className="relative mt-14 border-t border-indigo-100 pt-10 sm:mt-16 sm:pt-12">
+  {/* Heading */}
+  <div className="mb-7 text-center sm:mb-8 sm:text-left">
+    <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800 sm:text-sm">
+      <span className="h-2 w-2 rounded-full bg-amber-400" />
+      Please Read Carefully
+    </span>
+
+    <h3 className="mt-4 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">
+      Important Information
+    </h3>
+
+    <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-slate-600 sm:mx-0 sm:text-base">
+      পোর্টালে যুক্ত হওয়ার আগে নিচের তথ্যগুলো ভালোভাবে পড়ে নাও।
+    </p>
+
+    <div className="mx-auto mt-4 h-1 w-14 rounded-full bg-gradient-to-r from-amber-400 to-indigo-400 sm:mx-0" />
+  </div>
+
+  {/* Information cards */}
+  <ul className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+    {NOTES.map((n, i) => (
+      <li
+        key={n}
+        className="group relative flex min-w-0 items-start gap-3 overflow-hidden rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300/80 hover:shadow-lg hover:shadow-indigo-950/5 sm:gap-4 sm:p-5"
+      >
+        {/* Hover accent */}
+        <div className="absolute inset-y-0 left-0 w-1 origin-top scale-y-0 bg-gradient-to-b from-amber-300 to-indigo-400 transition-transform duration-300 group-hover:scale-y-100" />
+
+        {/* Icon */}
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-lg transition-colors duration-300 group-hover:border-amber-200 group-hover:bg-amber-50 sm:h-11 sm:w-11">
+          <span aria-hidden="true">ℹ️</span>
+        </span>
+
+        {/* Text */}
+        <span className="min-w-0 flex-1 break-words pt-1 text-sm leading-7 text-slate-700 sm:text-base">
+          {n}
+        </span>
+
+        {/* Item number */}
+        <span className="shrink-0 pt-1 text-xs font-bold tracking-wider text-indigo-200 transition-colors duration-300 group-hover:text-amber-500">
+          {String(i + 1).padStart(2, "0")}
+        </span>
+      </li>
+    ))}
+  </ul>
+</div>
+
+  </div>
+</section>
+
 
       {/* ---------- Footer / contact ---------- */}
-      <footer id="contact" className="scroll-mt-16 bg-slate-950 text-slate-300">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-mark.png" alt="" width={56} height={56} className="h-14 w-14 rounded-xl" />
-              <div><p className="font-bold text-white">{name}</p><p className="text-xs text-amber-300">{SITE.tagline}</p></div>
-            </div>
-            <p className="mt-4 text-sm leading-7 text-slate-400">গণিত (ষষ্ঠ – দশম) ও ICT (HSC) বিষয়ে বিশেষায়িত যত্ন।</p>
-          </div>
-
-          <div>
-            <h4 className="mb-3 font-semibold text-white">Contact / যোগাযোগ</h4>
-            <ul className="space-y-2.5 text-sm">
-              {phones.map((p) => (
-                <li key={p.number} className="flex items-start gap-2.5">
-                  <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-                  <span><a href={`tel:${p.number}`} className="hover:text-white">{p.number}</a>{p.note && <span className="text-slate-500"> ({p.note})</span>}</span>
-                </li>
-              ))}
-              {!settings?.phone && (
-                <li className="pl-6"><a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">WhatsApp-এ মেসেজ করুন →</a></li>
-              )}
-              <li className="flex items-start gap-2.5">
-                <MailIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-                <a href={`mailto:${SITE.email}`} className="break-all hover:text-white">{SITE.email}</a>
-              </li>
-              {facebook && (
-                <li className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-amber-300 text-[10px] font-black text-slate-900" aria-hidden>f</span>
-                  <a href={facebook} target="_blank" rel="noopener noreferrer" className="hover:text-white">Facebook page</a>
-                </li>
-              )}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="mb-3 font-semibold text-white">Address / ঠিকানা</h4>
-            <p className="flex items-start gap-2.5 text-sm leading-7"><PinIcon className="mt-1 h-4 w-4 shrink-0 text-amber-300" />{address}</p>
-          </div>
-
-          <div>
-            <h4 className="mb-3 font-semibold text-white">Director</h4>
-            <ul className="space-y-2.5 text-sm">
-              <li className="flex items-start gap-2.5"><UserIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" /><span className="font-medium text-white">{SITE.director.name}</span></li>
-              <li className="pl-6 text-slate-400">Profession: {SITE.director.profession}</li>
-              <li className="flex items-start gap-2.5"><BookIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" /><span><span className="text-slate-400">Educational Qualifications:</span> {SITE.director.education}</span></li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-white/10 py-5 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} {name}. All rights reserved.
-        </div>
-      </footer>
+     <Footer></Footer>
     </div>
   );
 }

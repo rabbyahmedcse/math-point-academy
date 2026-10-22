@@ -10,7 +10,7 @@ export const adminNav: NavItem[] = [
   { href: "/dashboard/admin/exams", label: "Exams & Results", icon: "clipboard" },
   { href: "/dashboard/admin/fees", label: "Fees", icon: "card" },
   { href: "/dashboard/admin/notices", label: "Notices", icon: "bell" },
-  { href: "/dashboard/admin/materials", label: "Materials", icon: "book" },
+  { href: "/dashboard/admin/materials", label: "Homework & Materials", icon: "book" },
   { href: "/dashboard/admin/settings", label: "Settings", icon: "sliders" },
   { href: "/dashboard/admin/account", label: "My account", icon: "user" },
 ];
@@ -23,7 +23,7 @@ export const teacherNav: NavItem[] = [
   { href: "/dashboard/teacher/exams", label: "Exams & Results", icon: "clipboard" },
   { href: "/dashboard/teacher/fees", label: "Fees", icon: "card" },
   { href: "/dashboard/teacher/notices", label: "Notices", icon: "bell" },
-  { href: "/dashboard/teacher/materials", label: "Materials", icon: "book" },
+  { href: "/dashboard/teacher/materials", label: "Homework & Materials", icon: "book" },
   { href: "/dashboard/teacher/account", label: "My account", icon: "user" },
 ];
 export const studentNav: NavItem[] = [
@@ -34,7 +34,7 @@ export const studentNav: NavItem[] = [
   { href: "/dashboard/student/results", label: "Results", icon: "chart" },
   { href: "/dashboard/student/fees", label: "Fees", icon: "card" },
   { href: "/dashboard/student/notices", label: "Notices", icon: "bell" },
-  { href: "/dashboard/student/materials", label: "Study Materials", icon: "book" },
+  { href: "/dashboard/student/materials", label: "Homework & Materials", icon: "book" },
 ];
 export const parentNav: NavItem[] = [
   { href: "/dashboard/parent", label: "My Children", icon: "users" },

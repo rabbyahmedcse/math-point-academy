@@ -5,46 +5,38 @@ import { runAction, AppError, type ActionState } from "@/lib/action";
 import { connectDB } from "@/lib/db";
 import { requireActionUser } from "@/lib/session";
 import { profileSchema } from "@/lib/validators";
+import { buildProfileUpdate } from "@/lib/profile-rules";
 import { User } from "@/models/User";
 
 /**
- * Update the signed-in user's OWN profile. What each role may change:
- *   admin / teacher : name, mobile
- *   student         : mobile, address and a PHOTO LINK (URL only — the image itself is never uploaded or stored)
- *   parent          : name (the mobile number links children, so it is locked)
- * E-mail is the login identity and cannot be changed here.
+ * Update the signed-in user's OWN profile (the target is always the session user — no id is ever read from the request).
+ * The per-role rules live in lib/profile-rules.ts (unit-tested). In short:
+ *   admin / teacher : name, mobile, address, photo link
+ *   student         : mobile, address, photo link (name is set by the coaching center)
+ *   parent          : name, address, photo link — the registered MOBILE NUMBER CANNOT BE CHANGED (rejected here,
+ *                     whatever the client sends); it links the parent to their children.
+ * E-mail, role, status, Student ID, class/batch and every other field are never written by this action.
  */
 export async function updateProfile(_p: ActionState, fd: FormData): Promise<ActionState> {
   return runAction(async () => {
     const me = await requireActionUser(["admin", "teacher", "student", "parent"]);
     const d = profileSchema.parse(Object.fromEntries(fd));
+
+    // me.phone / me.role come from the database (getCurrentUser), never from the request.
+    const change = buildProfileUpdate(me.role, me.phone, d);
+    if (!change.ok) throw new AppError(change.error);
+
     await connectDB();
-
-    const set: Record<string, unknown> = { updatedAt: new Date() };
-    const unset: Record<string, 1> = {};
-
-    if (me.role !== "student" && d.name) set.name = d.name;
-
-    if (me.role !== "parent" && d.phone !== undefined) {
-      if (d.phone) set.phone = d.phone;
-      else if (me.role === "student") throw new AppError("Mobile number is required.");
-      else unset.phone = 1;
-    }
-    if (me.role === "student" && d.address !== undefined) set.address = d.address;
-
-    // Photo: students only, stored as a plain URL. Empty = remove.
-    if (me.role === "student" && d.image !== undefined) {
-      if (d.image) set.image = d.image;
-      else unset.image = 1;
-    }
-
     try {
-      await User.updateOne({ _id: me.id }, { $set: set, ...(Object.keys(unset).length ? { $unset: unset } : {}) });
+      await User.updateOne(
+        { _id: me.id },
+        { $set: { ...change.set, updatedAt: new Date() }, ...(Object.keys(change.unset).length ? { $unset: change.unset } : {}) },
+      );
     } catch (e) {
       if (typeof e === "object" && e && "code" in e && (e as { code: number }).code === 11000) throw new AppError("This mobile number is already used by another account.");
       throw e;
     }
-    revalidatePath("/dashboard", "layout");
+    revalidatePath("/dashboard", "layout"); // header name / photo + My Account refresh
     return "Profile updated.";
   });
 }

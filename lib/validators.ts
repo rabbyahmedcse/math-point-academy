@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PAYMENT_METHODS } from "@/models/Fee";
+import { RESOURCE_KINDS, isSafeHttpUrl } from "./resources";
 
 const str = (label: string, min = 1) => z.string().trim().min(min, `${label} is required`);
 const phone = z.string().trim().regex(/^(\+?88)?01[3-9]\d{8}$/, "Enter a valid Bangladeshi mobile number (01XXXXXXXXX)");
@@ -105,11 +106,15 @@ export const examSchema = z.object({
 
 export const materialSchema = z.object({
   batchId: str("Batch"),
-  title: str("Title", 2),
-  description: z.string().trim().optional(),
-  kind: z.enum(["homework", "material"]),
-  url: z.string().trim().url("Enter a valid link").optional().or(z.literal("")),
+  title: str("Title", 2).max(150, "Title is too long (max 150 characters)"),
+  description: z.string().trim().max(2000, "Description is too long (max 2000 characters)").optional(),
+  kind: z.enum(RESOURCE_KINDS, { message: "Select a type" }),
+  // http(s) only — zod's .url() alone would also accept javascript: / data: / file: links.
+  url: z.string().trim().max(1000).refine((v) => v === "" || isSafeHttpUrl(v), "Link must start with http:// or https://").optional(),
+  // Optional publish / scheduled date (YYYY-MM-DD). A future date hides the item from students until that day.
+  publishDate: date.optional().or(z.literal("")),
 });
+export const materialUpdateSchema = materialSchema.extend({ id: str("Resource") });
 
 export const settingsSchema = z.object({
   coachingName: str("Coaching name", 2),
